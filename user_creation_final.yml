@@ -1,0 +1,43 @@
+---
+- hosts: server1
+  vars:
+    password: Test123
+    userid: 
+    sgrp: 
+    comments: 
+    username: momo_test99
+    pgrp: 
+    hme: 
+  roles:
+    - add_sudoers
+  tasks:
+
+    - name: Check user exist
+      become: true
+      become_user: deployer
+      become_method: su
+      shell: id {{ username }}
+      register: user_exist
+      ignore_errors: yes
+
+    - debug: msg="User name {{ username }} is already existing on {{ ansible_hostname }}"
+      when: user_exist.rc == 0
+
+    - name: User creation
+      become: true
+      become_user: root
+      become_method: su
+      user:
+        name: "{{ username }}"
+        uid: "{{ userid }}"
+        home: "{{ hme }}"
+        comment: "{{ comments }}"
+        password: "{{ password }}"
+        group: "{{ pgrp }}"
+        groups: "{{ sgrp}}"
+        append: "yes"
+      when: user_exist.rc != 0
+      register: user_creation
+
+    - debug: msg="User name {{ username }} has been created on {{ ansible_hostname }}"
+      when: user_creation.changed
