@@ -1,0 +1,21 @@
+---
+- hosts: server1
+  become: true
+  become_user: root
+  become_method: su
+  tasks:
+
+    - name: Execution pre validation script
+      script: /home/thor/Public/Atom_projects/automatisation_tool/prevalid_scr.sh
+
+    - name: Fetching the inventory report
+      fetch:
+        src: /tmp/details.txt
+        dest: /home/thor/Public/Atom_projects/automatisation_tool/pre-validation-{{ inventory_hostname }}
+        flat: yes
+
+    - name: hostname
+      command: hostname
+      register: server_hostname
+
+    - debug: msg="Pre-validation reports has been copied to {{ server_hostname.stdout }}"

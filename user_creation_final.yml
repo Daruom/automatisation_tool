@@ -5,7 +5,7 @@
     userid: 
     sgrp: 
     comments: 
-    username: momo_test99
+    username: momo_testeur00
     pgrp: 
     hme: 
   roles:
@@ -38,6 +38,11 @@
         append: "yes"
       when: user_exist.rc != 0
       register: user_creation
+      ignore_errors: yes
 
     - debug: msg="User name {{ username }} has been created on {{ ansible_hostname }}"
       when: user_creation.changed
+      ignore_errors: yes
+
+    - name: remove deployer
+      include_role: name=remove_sudoers

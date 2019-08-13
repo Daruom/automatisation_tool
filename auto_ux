@@ -36,7 +36,8 @@ do
 		echo -e "Select Target servers from option 10"
 		read dummy
 	else
-	echo "Welcome to Pre-validation"
+	cat pre_validation.yml | sed "s/abcz/$target/g" > pre_validation_with_server.yml
+	ansible-playbook pre_validation_with_server.yml -K -v
 	sleep 2
 fi
 	;;
@@ -49,7 +50,7 @@ fi
 	do
 		echo -e $BIPurple" 1. User Creation \n"
 		echo -e " 2. User Removal \n"
-		echo -e " 3. Group add \n"
+		echo -e " 3. Password reset\n"
 		echo -e " 0. Exit \n"$NORMAL
 		read menu2
 		case $menu2 in
@@ -64,10 +65,12 @@ fi
 			python user_credentials.py
 			;;
 			2)
-			echo -e " Welcome to User Removal \n"
+			cat user_remove.yml | sed "s/abcz/$target/g" > user_remove_with_server.yml
+			python user_credentials_removal.py
 			;;
 			3)
-			echo -e " Welcome to Group Add \n"
+			cat password_reset.yml | sed "s/abcz/$target/g" > password_reset_with_server.yml
+			python password_credentials.py
 			;;
 			*)
 			echo -e " Wrong choice ! \n"

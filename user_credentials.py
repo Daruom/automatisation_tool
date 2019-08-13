@@ -35,7 +35,7 @@ def main(arguments):
             line = line.replace('comments_var', comments)
         print line
 
-    ansible_command = "ansible-playbook user_creation_final.yml -K -vvv"
+    ansible_command = "ansible-playbook user_creation_final.yml -K -v"
     os.system(ansible_command)
     time.sleep(2)
 

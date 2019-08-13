@@ -1,0 +1,15 @@
+---
+- hosts: server1
+  become: true
+  become_user: root
+  become_method: su
+  tasks:
+
+    - name: user removal task
+      user: name=momo_test5 state=absent remove=yes
+      register: user_removal
+
+    - debug: msg="user momo_test5 has been removed from {{ ansible_hostname }}"
+      when: user_removal.changed
+
+    - debug: var=user_removal

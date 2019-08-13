@@ -1,0 +1,79 @@
+---
+
+- name: Install python-pip
+  become: yes
+  become_user: root
+  become_method: su
+  yum: pkg=python-pip state=latest
+
+- name: Install pexpect
+  become: yes
+  become_user: root
+  become_method: su
+  pip: name=pexpect
+
+- name: Create .ssh folder
+  file: path="thor/.ssh" state=directory mode=0700
+
+- name: create ssh key if it does not exist
+  expect:
+    command: ssh-keygen -t rsa
+    # only creates the key if the file does not exist
+    creates: "thor/.ssh/id_rsa"
+    echo: yes
+    timeout: 5
+    responses:
+      "file": "thor/.ssh/id_rsa" ## Enter file in which to save the key (/home/<remote_user>/.ssh/id_rsa)
+      "passphrase": "" ## Enter passphrase (empty for no passphrase)
+
+- name: read public key
+  command: "cat thor/.ssh/id_rsa.pub"
+  register: runner_pub_key
+
+
+
+- name: Make sure we have a 'wheel' group
+  become: yes
+  become_user: root
+  become_method: su
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  become: yes
+  become_user: root
+  become_method: su
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+
+- name: Ensure sudoers.d is enabled
+  become: yes
+  become_user: root
+  become_method: su
+  lineinfile: dest=/etc/sudoers state=present backup=yes regexp='^#includedir /etc/sudoers.d' line='#includedir /etc/sudoers.d' validate='visudo -cf %s'
+
+- name: Set up password-less sudo for user
+  become: yes
+  become_user: root
+  become_method: su
+  copy: content="deployer ALL=(ALL) NOPASSWD:ALL" dest="/etc/sudoers.d/deployer" owner=root group=root mode=0440
+
+- name: Create user
+  become: yes
+  become_user: root
+  become_method: su
+  user: name=deployer state=present group=wheel shell=/bin/bash
+
+# - name: add deploy key to authorized keys
+#   become: yes
+#   become_user: root
+#   become_method: su
+#   authorized_key:
+#     user: deployer
+#     key: runner_pub_key.stdout

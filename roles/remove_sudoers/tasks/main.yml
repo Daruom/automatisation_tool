@@ -1,0 +1,36 @@
+---
+- name: check if user exist
+  shell: id deployer
+  register: user_exist
+  ignore_errors: true
+
+- debug: msg="Le user deployer n'existe pas"
+  when: user_exist.rc != 0
+
+- name: remove user
+  become: yes
+  become_user: root
+  become_method: su
+  user:
+    name: deployer
+    state: absent
+    remove: yes
+    shell: /bin/bash
+  when: user_exist.rc == 0
+
+- name: check if sudoers.d exist for deployer
+  become: yes
+  become_user: root
+  become_method: su
+  stat: path="/etc/sudoers.d/deployer"
+  register: file_exist
+  ignore_errors: true
+
+- name: remove sudoers.d file
+  become: yes
+  become_user: root
+  become_method: su
+  file:
+    state: absent
+    path: "/etc/sudoers.d/deployer"
+  when: file_exist.stat.exists == True
