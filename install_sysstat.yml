@@ -1,0 +1,9 @@
+---
+- hosts: abcz
+  become: true
+  become_user: root
+  become_method: su
+  tasks:
+
+    - name: install sysstat package
+      yum: name=sysstat state=present
